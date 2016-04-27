@@ -1,1 +1,339 @@
-//not yet. code is in the lab.
+//not yet. code is in the lab.<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Getting 3D Sensor Data</title>
+
+<!-- 1/3. Include the RGraph libraries -->
+<script src="RGraph/libraries/RGraph.common.core.js" >
+<!--
+
+//-->
+</script>
+<script src="RGraph/libraries/RGraph.common.context.js" >
+<!--
+
+//-->
+</script>
+<script src="RGraph/libraries/RGraph.line.js" >
+<!--
+
+//-->
+</script>
+<!--[if IE 8]><script src="../excanvas/excanvas.compressed.js">
+<!--
+
+//-->
+</script><![endif]-->
+</head>
+
+<body>
+<canvas id="canvas" width="4400" height="2000" style="border:1px solid #d3d3d3;"></canvas>
+<!--
+Debug Informtion:
+<div id="myDivElement" />
+-->
+
+<script>
+<!--
+
+document.body.style.backgroundImage = "url('bac.jpg')";
+
+    var batch=30;
+    var samples=batch;
+    var timecycle=0;
+    var requestCounter = 0;
+    var interval = 0;
+    var nodata = 0;
+    var serverAddressBase = "xdata.";
+    var serverAddress = "xdata.0"; //default file to get from server
+
+    d1 = [];
+    d2 = [];
+    d3 = [];
+
+    for (var i=0; i< samples; ++i) {
+        d1.push(null);
+        d2.push(null);
+        d3.push(null);
+    }
+    var xmlHttp = createXmlHttpRequestObject();
+    function createXmlHttpRequestObject(){
+      var xmlHttp;
+      try
+      {
+	xmlHttp = new XMLHttpRequest();    
+      }
+      catch(e)
+      {
+	try
+	{
+	  xmlHttp = new ActiveXObject("Microsoft.XMLHTTP");
+	}
+	catch(e){ }
+      }
+      if (!xmlHttp)
+	alert("Error creating the XMLHttpRequest Object");
+      else
+	return xmlHttp;
+    }
+    function GetJsonData()
+    {
+      nodata=0;
+      if(xmlHttp)
+      {
+	try
+	{
+	  xmlHttp.open("Get", serverAddress, false);
+	  xmlHttp.send(null);
+	  try{
+		  handleJsonData();
+	  }
+	  catch(err){
+	     if(err=="no data"){
+		  nodata=1; //record status
+	     }
+	  }
+	}
+	catch(e)
+	{
+	 // alert("Can't connect to server\n" + e.toString());
+	}
+      }
+    }
+    function handleJsonData()
+    {
+      var result = xmlHttp.responseText;
+      if(result==''){
+	throw "no data";
+      }
+      else{
+	      try{
+		      var jobject = eval("(" + result + ")");
+		      var i=0;
+		      if(jobject.time>timecycle){
+			      timecycle=jobject.time;
+			      if(jobject.xarray.length==0){
+				throw "no data";
+			      }
+			      else{
+				      for (i=0;i<jobject.xarray.length;i++)
+				      {
+					  d1[i]=jobject.xarray[i][0];
+					  d2[i]=jobject.xarray[i][1];
+					  d3[i]=jobject.xarray[i][2];
+				      }
+			      }
+		      }
+		      else{
+		      }
+	      }
+	      catch(e){
+	      }
+      }
+    }
+
+function car_controlling(d1,d2) 
+{
+	//serverAddress=serverAddressBase+requestCounter;
+	GetJsonData();
+	//alert("sdfsd");
+	if(!nodata){ //Keep the file counter
+		requestCounter=(requestCounter+1)%2; //cycle counter
+		//alert('Counter changed: '+requestCounter);
+	}
+	else{
+		//alert('Counter keeped: '+requestCounter);
+	}
+	
+
+	if(d2[2] < -1800 && car_s == 0)
+	{ 
+		rot += 2.5;
+	}
+	else if(d2[2] > 1800 && car_s == 0)
+	{ 
+		rot -= 2.5;
+	}
+
+	if(d1[2] < -1800 && car_s == 0)
+	{ 
+		mov = -1;
+	}
+	else if(d1[2] > 1800 && car_s == 0)
+	{ 
+		mov = 1;
+	}
+	else if(check == 0)
+	{ 
+		mov = 0;
+	}
+
+
+}
+var car_s = 0;
+var check = 0;
+var x = 3300;
+var y = 1750;
+var speed = 5;
+var angle = 0;
+var mod = 0;
+var mov = 0;
+var rot = 0;
+var da1 = 0;
+var da2 = 0;
+
+
+c = document.getElementById("canvas");
+ctx = c.getContext("2d");
+car = new Image();
+tree = new Image();
+arrow = new Image();
+coff = new Image();
+fb = new Image();
+iron = new Image();
+titan = new Image();
+bmw = new Image();
+mush = new Image();
+
+bmw.src = "http://www.officialpsds.com/images/thumbs/BMW-Logo-psd64590.png";
+titan.src = "http://1.bp.blogspot.com/--cIy2cP47sQ/UWTD0I0ODDI/AAAAAAAABO8/nPuamilR6n8/s1600/11767.png";
+iron.src = "http://orig12.deviantart.net/0cd6/f/2013/216/7/9/iron_man_3_png_by_stardesign01-d6glp8z.png";
+fb.src = "http://icons.iconarchive.com/icons/dembsky/social-store/512/Facebook-shop-icon.png";
+coff.src = "http://findicons.com/files/icons/880/icon_shop/256/coffee_store.png";
+car.src = "http://www.ajaybadgujar.com/wp-content/uploads/2014/06/player_car.png";
+tree.src = "tree.png";
+arrow.src = "http://res.freestockphotos.biz/pictures/6/6203-illustration-of-a-left-facing-3d-arrow-pv.png";
+mush.src = "http://vignette1.wikia.nocookie.net/mario/images/8/8c/Mushroom.png/revision/latest?cb=20101223220717";
+
+ctx.drawImage(bmw, 4000,1400,350,350);
+ctx.drawImage(coff, 4000,0,350,350);
+ctx.drawImage(fb, 4000,350,350,350);
+ctx.drawImage(iron, 4000,700,350,350);
+ctx.drawImage(titan, 4000,1050,350,350);
+ctx.drawImage(mush, 4000,1750,350,250);
+////////////////////////////////////////////////////////
+    ctx.fillStyle = "white";
+    ctx.fillRect(1000, 0, 2000, 2000);
+    ctx.clearRect(1010, 10, 1980, 1980);
+    for (var i=0; i< 20; ++i) {
+        ctx.drawImage(tree, 980+96*i,0,200,300);
+    }
+///////////////////////////////////////////////////////
+ctx.fillStyle = "white";
+ctx.fillRect(820, 0, 10, 2000);
+ctx.fillStyle = "white";
+ctx.fillRect(20, 0, 10, 2000);
+for (var i=0; i< 9; ++i) {
+        ctx.fillStyle = "white";
+ 	ctx.fillRect(620, 0+240*i, 10, 200);
+	ctx.fillStyle = "white";
+ 	ctx.fillRect(220, 0+240*i, 10, 200);
+    }
+ctx.fillStyle = "yellow";
+ctx.fillRect(430, 0, 10, 2000);
+ctx.fillStyle = "yellow";
+ctx.fillRect(410, 0, 10, 2000);
+////////////////////////////////////
+ctx.fillStyle = "white";
+ctx.fillRect(3990, 0, 10, 2000);
+ctx.fillStyle = "white";
+ctx.fillRect(3200, 0, 10, 2000);
+for (var i=0; i< 9; ++i) {
+        ctx.fillStyle = "white";
+ 	ctx.fillRect(3800, 0+240*i, 10, 200);
+	ctx.fillStyle = "white";
+ 	ctx.fillRect(3400, 0+240*i, 10, 200);
+    }
+ctx.fillStyle = "yellow";
+ctx.fillRect(3610, 0, 10, 2000);
+ctx.fillStyle = "yellow";
+ctx.fillRect(3590, 0, 10, 2000);
+ctx.fillStyle = "white";
+ctx.fillRect(2990, 1580, 220, 420);
+ctx.clearRect(2990, 1590, 220, 400);
+
+for (var i=0; i< 13; ++i) {
+        ctx.drawImage(tree, 820,0+150*i,200,300);
+    }
+for (var i=0; i< 10; ++i) {
+        ctx.drawImage(tree, 3000,0+140*i,200,300);
+    }
+
+window.addEventListener("keydown", keypress_handler, false);
+window.addEventListener("keyup", keyup_handler, false);
+
+
+function draw2() {
+
+    car_controlling(d1,d2);
+    ctx = c.getContext("2d");
+    ctx.clearRect(1010, 300, 1980, 1690);
+    ctx.clearRect(2990, 1590, 380, 400);
+
+    ctx.fillStyle = "white";
+    
+    for (var i=0; i< 13; ++i) {
+        ctx.fillRect(1050+140*i, 350, 150, 280);//target
+    ctx.clearRect(1060+140*i, 360, 130, 260);
+    }
+    for (var i=0; i< 10; ++i) {
+        ctx.fillRect(1050+140*i, 1030, 150, 280);//target
+    ctx.clearRect(1060+140*i, 1040, 130, 260);
+    }
+    for (var i=0; i< 10; ++i) {
+        ctx.fillRect(1050+140*i, 1700, 150, 280);//target
+    ctx.clearRect(1060+140*i, 1710, 130, 260);
+    }
+
+    
+    ctx.drawImage(arrow, 2950,1700,300,200);//arrow
+
+    x += (speed * mov) * Math.cos(Math.PI / 180 * (rot+90));
+    y += (speed * mov) * Math.sin(Math.PI / 180 * (rot+90));
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(Math.PI / 180 * rot);
+    ctx.drawImage(car, -(car.width / 2), -(car.height / 2));
+    ctx.restore();
+
+    setTimeout(draw2 ,20);
+}
+
+function keyup_handler(event) {
+    if (event.keyCode == 87 || event.keyCode == 83 || event.keyCode == 32) {
+        mov = 0;
+	check = 0;
+        car_s = 0;
+    }
+}
+
+function keypress_handler(event) {
+    console.log(event.keyCode);
+    if (event.keyCode == 87) {
+        mov = 1;
+	check = 1;
+    }
+    if (event.keyCode == 83) {
+        mov = -1;
+	check = 1;
+    }
+    if (event.keyCode == 65) {
+        rot -= 5;
+    }
+    if (event.keyCode == 68) {
+        rot += 5;
+    }
+    if (event.keyCode == 32) {
+        car_s = 1;
+    }
+}
+
+draw2(d1,d2);
+
+
+//-->
+</script>
+</body>
+</html>
